@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Template Flash Sale</title>
+<style>
+:root{--bg:#fff;--fg:#222;--card:#f5f5f5;--ac:#ee4d2d;--bd:#ddd}
+@media(prefers-color-scheme:dark){:root{--bg:#121212;--fg:#eee;--card:#1e1e1e;--bd:#333}}
+*{box-sizing:border-box}
+body{margin:0;padding:16px;font-family:system-ui,sans-serif;background:var(--bg);color:var(--fg);max-width:480px;margin:auto}
+h1{font-size:20px;color:var(--ac)}
+.card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:12px}
+label{display:block;font-size:13px;margin:8px 0 4px;opacity:.8}
+input,select{width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--fg);font-size:15px}
+button{width:100%;padding:12px;border:0;border-radius:8px;background:var(--ac);color:#fff;font-size:16px;margin-top:8px}
+#cd{font-size:32px;text-align:center;font-weight:700;margin:6px 0}
+.chk{display:flex;gap:8px;align-items:center;margin:6px 0}
+.chk input{width:auto}
+</style>
+</head>
+<body>
+<h1>⚡ Persiapan Flash Sale</h1>
+
+<div class="card">
+<label>Waktu flash sale</label>
+<input type="datetime-local" id="t">
+<div id="cd">--:--:--</div>
+</div>
+
+<div class="card">
+<label>Link produk</label>
+<input id="link" placeholder="https://shopee.co.id/...">
+<label>Kurir</label>
+<select id="kurir">
+<option>SPX Standard</option><option>SPX Hemat</option><option>J&amp;T Express</option>
+<option>JNE Reguler</option><option>SiCepat</option><option>Anteraja</option>
+</select>
+<label>Metode pembayaran</label>
+<select id="bayar">
+<option>ShopeePay</option><option>SPayLater</option><option>COD</option>
+<option>Transfer Virtual Account</option><option>Kartu Kredit/Debit</option><option>Gerai Retail</option>
+</select>
+<label>Voucher</label>
+<input id="vc" placeholder="Kode / voucher yang dipakai">
+<label>Varian (warna/ukuran)</label>
+<input id="var" placeholder="Contoh: Hitam, L">
+</div>
+
+<div class="card">
+<b>Checklist</b>
+<div class="chk"><input type="checkbox" class="c"> Sudah login</div>
+<div class="chk"><input type="checkbox" class="c"> Alamat benar</div>
+<div class="chk"><input type="checkbox" class="c"> Saldo/limit cukup</div>
+<div class="chk"><input type="checkbox" class="c"> Voucher diklaim</div>
+<div class="chk"><input type="checkbox" class="c"> Internet stabil</div>
+</div>
+
+<div class="card">
+<b>Ringkasan</b>
+<div id="sum" style="font-size:14px;margin-top:6px"></div>
+<button id="open">Buka Produk di Shopee</button>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const F=['t','link','kurir','bayar','vc','var'];
+function save(){try{const d={};F.forEach(k=>d[k]=$(k).value);d.c=[...document.querySelectorAll('.c')].map(x=>x.checked);localStorage.setItem('fs',JSON.stringify(d))}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem('fs')||'null');if(!d)return;F.forEach(k=>{if(d[k]!=null)$(k).value=d[k]});document.querySelectorAll('.c').forEach((x,i)=>x.checked=!!(d.c&&d.c[i]))}catch(e){}}
+function sum(){$('sum').innerHTML=`Kurir: <b>${$('kurir').value}</b><br>Bayar: <b>${$('bayar').value}</b><br>Voucher: <b>${$('vc').value||'-'}</b><br>Varian: <b>${$('var').value||'-'}</b>`}
+function tick(){
+const v=$('t').value;if(!v){$('cd').textContent='--:--:--';return}
+let s=Math.floor((new Date(v)-Date.now())/1000);
+if(s<=0){$('cd').textContent='MULAI!';return}
+const p=n=>String(n).padStart(2,'0');
+$('cd').textContent=`${p(Math.floor(s/3600))}:${p(Math.floor(s%3600/60))}:${p(s%60)}`;
+if(s===180)beep();
+}
+function beep(){try{const a=new AudioContext(),o=a.createOscillator();o.connect(a.destination);o.start();setTimeout(()=>o.stop(),800);navigator.vibrate&&navigator.vibrate(500)}catch(e){}}
+$('open').onclick=()=>{const l=$('link').value.trim();if(/^https?:\/\//.test(l))window.open(l,'_blank');else alert('Isi link produk yang valid')};
+document.querySelectorAll('input,select').forEach(e=>e.addEventListener('input',()=>{save();sum()}));
+load();sum();setInterval(tick,1000);tick();
+</script>
+</body>
+</html>
